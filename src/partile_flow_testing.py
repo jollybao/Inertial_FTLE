@@ -14,12 +14,12 @@ fig, ax = plt.subplots(1,1,figsize=(10,5))
 p = num.pi
 A = 0.1
 epsilon = 0.25
-w = p/5
-delta = 0.0001
+w = 0.6*p
+delta = 0.00001
 dt = 0.1
 partition = 20
 St = 1
-R = 0
+R = 1
 St_inverse = 1/St
 N = int(input("Enter number of particles: "))
 col = ['r','y','b','g','k','c','m','r','y','b',
@@ -52,7 +52,8 @@ def u_acc(r,t):
     return (vel(r,t + delta)- vel(r,t- delta))/(2*delta)
 
 def accel(r,v,t):
-        a = (vel(r,t) - v)*St_inverse + 1.5*R*u_acc(r,t)
+        a = 1.5*R*u_acc(r,t)
+        #(vel(r,t) - v)*St_inverse +
         return a
 
 def rk4(state,t):

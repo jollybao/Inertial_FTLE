@@ -32,21 +32,58 @@ def Jacobian(X,Y):
 
 
 start_time = time.time()
-
+'''
 #Input = open('heavy_particle.txt','r')
-Input = open('R0_St02.txt','r')
+Input = open('test10.txt','r')
 X,Y = num.loadtxt(Input,unpack = True)
 Input.close()
 
 plt.figure(1)
 plt.scatter(X,Y)
+'''
 
+input1 = open('rk4.txt','r')
+input2 = open('rk4_accel.txt','r')
+x1,y1,vx1,vy1 = num.loadtxt(input1,unpack = True)
+x2,y2,vx2,vy2 = num.loadtxt(input2,unpack = True)
+input1.close()
+input2.close()
+
+x1 = x1[::2]
+y1 = y1[::2]
+vx1 = vx1[::2]
+vy1 = vy1[::2]
+x2 = x2[::2]
+y2 = y2[::2]
+vx2 = vx2[::2]
+vy2 = vy2[::2]
+plt.figure(1)
+plt.scatter(x1,y1)
+
+plt.figure(2)
+plt.scatter(x2,y2)
+
+
+plt.figure(3)
+plt.plot(vx1,'k')
+plt.plot(vx2,'b')
+
+plt.figure(4)
+plt.plot(vy1,'k')
+plt.plot(vy2,'b')
+
+#f, (ax1, ax2) = plt.subplots(2, 1, sharey=True)
+#ax1.scatter(x1, y1)
+
+#ax2.scatter(x2, y2)
+'''
 plt.figure(2)
 FTLE = Jacobian(X,Y)
 FTLE = num.log(FTLE)
 plt.imshow(FTLE)
 plt.colorbar()
 plt.gca().invert_yaxis()
+'''
 plt.show()
 
 print(time.time()-start_time)
