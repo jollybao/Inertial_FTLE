@@ -1,0 +1,1 @@
+These are negative time FTLE for the flow, with w = 0.6pi, St = 0.2

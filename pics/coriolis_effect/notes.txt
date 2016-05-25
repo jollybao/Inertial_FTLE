@@ -1,0 +1,1 @@
+Simulation with coriolis force added along with Stokes drag term and added mass term. Parameters are: R = 1, St = 1, and w = 0.2pi.
