@@ -6,7 +6,9 @@ import time as time
 # constants
 L = 400
 H = 200
+# horizontal grid difference
 delta_1 = 1.98/(L-1)
+# verticle grid difference
 delta_2 = 0.98/(H-1)
 
 start_time = time.time()
@@ -23,9 +25,9 @@ def Jacobian(X,Y):
             J[1][0] = (Y[(1+i)*L+2+j]-Y[(1+i)*L+j])/(2*delta_2)
             J[1][1] = (Y[(2+i)*L+1+j]-Y[i*L+1+j])/(2*delta_2)
 			
-			# Green-Cauchy tensor
+	    # Green-Cauchy tensor
             D = num.dot(num.transpose(J),J)
-			# its largest eigenvalue
+	    # its largest eigenvalue
             lamda = LA.eigvals(D)
             FTLE[i][j] = max(lamda)
     return FTLE
@@ -34,14 +36,16 @@ def Jacobian(X,Y):
 start_time = time.time()
 
 
-Input = open('R1_St1.txt','r')
+Input = open('var_8.txt','r')
 X,Y = num.loadtxt(Input,unpack = True)
 Input.close()
 
+# scatter plot
 plt.figure(1)
 plt.scatter(X,Y)
 
 
+# FTLE plot
 plt.figure(2)
 FTLE = Jacobian(X,Y)
 FTLE = num.log(FTLE)

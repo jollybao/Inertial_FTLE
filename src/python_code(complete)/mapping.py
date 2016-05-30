@@ -12,30 +12,36 @@ A = 0.1
 epsilon = 0.25
 w = 0.2*p
 Delta = 0.00001
-dt = 0.1
+dt = 1e-1
 delta = dt
 T = 15
 L = 400
 H = 200
-St = 1
+
+# Stokes' constant
+St = 0.2
+# Reynold's number
 R = 1
 St_inverse = 1/St
 
+# earth rotational speed
+#w_rot = 7.2921e-5
+w_rot = 1e-1
+
+# lattitude
+phi = p*40.7128/180
+# coriolis parameter
+f = 2*w_rot*num.sin(phi)
+
+# parameters for Gaussian noise
+u = 0
+sigma = 8
+B = 1e-3
 
 start_time = time.time()
 
-# wave function that defines the characteristics of 
-# double gyre
-def phi(x,y,t):
-    temp = A*num.sin(p*f(x,t))*num.sin(p*y)
-    return temp
 
-def f(x,t):
-    temp = epsilon*num.sin(w*t)*x**2+(1-2*epsilon*num.sin(w*t))*x
-    return temp
-
-
-# function that computes velocity of flow at each point
+# function that computes velocity of flow at any point, any time
 def velocity(x,y,t):
     f = epsilon*num.sin(w*t)*x*x + (1-2*epsilon*num.sin(w*t))*x
     vx = A*p*num.sin(p*f)*num.cos(p*y)
@@ -43,6 +49,7 @@ def velocity(x,y,t):
     
     return num.column_stack((vx,vy))
 
+# flow acceleration funtion (du/dt + u* del(u))
 def u_acc(x,y,t):
     u_accel = (velocity(x,y,t + Delta) - velocity(x,y,t - Delta))/(2*Delta)
     v = velocity(x,y,t)
@@ -52,30 +59,43 @@ def u_acc(x,y,t):
     u_accel = u_accel + u_ax*num.column_stack((v[:,0],v[:,0])) + u_ay*num.column_stack((v[:,1],v[:,1]))
     return u_accel
 
-
+# particle acceleration function
 def accel(x,y,v,t):
     u = velocity(x,y,t)
+    
+    #Stoke's drag term
     a = St_inverse*(u - v)
+    
+    #Added mass term
     au = 1.5*R*u_acc(x,y,t)
+    
+    #Coriolis term
+    #ac = num.column_stack((u[:,1],-1*u[:,0]))
+    #ac = f*ac
+    
     a = a + au
     return a
 
-def update(state,t):
+# state transition function used in RK4 routine
+def update(state,t,noise):
     r = state[:,2:4]
-    v = accel(state[:,0],state[:,1],r,t)
+    v = accel(state[:,0],state[:,1],r,t) + noise
     return num.hstack((r,v))
 
     
 def rk4(state,t):
-    r = state
-    k1 = dt*update(r,t)
-    k2 = dt*update(r+0.5*k1,t+0.5*dt)
-    k3 = dt*update(r+0.5*k2,t+0.5*dt)
-    k4 = dt*update(r+k3,t+dt)
+    r = state[:,0:4]
+    k1 = dt*update(r,t,state[:,4:6])
+    k2 = dt*update(r+0.5*k1,t+0.5*dt,state[:,4:6])
+    k3 = dt*update(r+0.5*k2,t+0.5*dt,state[:,4:6])
+    k4 = dt*update(r+k3,t+dt,state[:,4:6])
     r += (k1+2*k2+2*k3+k4)/6
     state[:,0] = num.clip(r[:,0],0.00001,1.99999)
     state[:,1] = num.clip(r[:,1],0.00001,0.99999)
-    return state
+
+    noise = B*num.random.normal(u,sigma,(L,2))
+    state[:,4:6] += noise
+    return state[:,0:4]
 
 '''
 r = num.array([[0.9,0.1],[1,0.4]],num.float64)
@@ -86,7 +106,7 @@ i = 0
 for t in num.arange(0,T,dt):
     pts[i,:] = state[0,0:2]
     i = i + 1
-    state = test(state,t)
+    state = rk4(state,t)
 
 
 plt.figure(1)
@@ -95,7 +115,7 @@ plt.plot(pts[:,0],pts[:,1])
 plt.show()
 '''
 
-output = open('R1_St1.txt','ab')
+output = open('var_8.txt','ab')
 # y-coordinate of the grid
 h = num.linspace(0.01,0.99,H,num.float64)
 #pts = num.zeros((H*L,2))
@@ -103,17 +123,18 @@ h = num.linspace(0.01,0.99,H,num.float64)
 for i in h:
     
     # initialize grid horizontally
-    x = num.linspace(0.01,1.99,L,num.float64)
-    y = i*num.ones(L,num.float64)
-    r = num.column_stack((x,y))
-    state = num.hstack((r,velocity(x,y,0)))
+    state = num.zeros((L,6))
+    state[:,0] = num.linspace(0.01,1.99,L,num.float64)
+    state[:,1] = i*num.ones(L,num.float64)
+    state[:,2:4] = velocity(state[:,0],state[:,1],0)
+    state[:,4:6] = B*num.random.normal(u,sigma,(L,2))
     #print(state)
     
-    # perform RK4 to get position of particle 20s later
+    # perform RK4 to get position of particle 15s later
     for t in num.arange(0,T,dt):
   
-        state = rk4(state,t)
-        #state = NonInertial_rk4(state,t)
+        state[:,0:4] = rk4(state,t)
+        
     #pts[j:L+j,:] = state[:,0:2]
     #j = j + L
     num.savetxt(output,state[:,0:2])
@@ -121,8 +142,9 @@ for i in h:
 #plt.scatter(pts[:,0],pts[:,1])
 #plt.show()    
 
-
 output.close()
+
+
 print(time.time()-start_time)
 
 
