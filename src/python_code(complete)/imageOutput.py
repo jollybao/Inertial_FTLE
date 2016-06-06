@@ -36,7 +36,7 @@ def Jacobian(X,Y):
 start_time = time.time()
 
 
-Input = open('var_8.txt','r')
+Input = open('step001.txt','r')
 X,Y = num.loadtxt(Input,unpack = True)
 Input.close()
 
@@ -53,7 +53,6 @@ plt.imshow(FTLE)
 plt.colorbar()
 #plt.gca().invert_yaxis()
 
-plt.show()
 
 print(time.time()-start_time)
 plt.show()

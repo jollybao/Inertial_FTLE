@@ -10,9 +10,9 @@ import time as time
 p = num.pi
 A = 0.1
 epsilon = 0.25
-w = 0.2*p
+w = 0.6*p
 Delta = 0.00001
-dt = 1e-1
+dt = 1e-2
 delta = dt
 T = 15
 L = 400
@@ -21,12 +21,12 @@ H = 200
 # Stokes' constant
 St = 0.2
 # Reynold's number
-R = 1
+R = 0
 St_inverse = 1/St
 
 # earth rotational speed
 #w_rot = 7.2921e-5
-w_rot = 1e-1
+w_rot = 1e-2
 
 # lattitude
 phi = p*40.7128/180
@@ -35,7 +35,7 @@ f = 2*w_rot*num.sin(phi)
 
 # parameters for Gaussian noise
 u = 0
-sigma = 8
+sigma = 1
 B = 1e-3
 
 start_time = time.time()
@@ -115,7 +115,7 @@ plt.plot(pts[:,0],pts[:,1])
 plt.show()
 '''
 
-output = open('var_8.txt','ab')
+output = open('step001.txt','ab')
 # y-coordinate of the grid
 h = num.linspace(0.01,0.99,H,num.float64)
 #pts = num.zeros((H*L,2))
@@ -128,6 +128,7 @@ for i in h:
     state[:,1] = i*num.ones(L,num.float64)
     state[:,2:4] = velocity(state[:,0],state[:,1],0)
     state[:,4:6] = B*num.random.normal(u,sigma,(L,2))
+    #state[:,4:6] = num.zeros((L,2))
     #print(state)
     
     # perform RK4 to get position of particle 15s later
