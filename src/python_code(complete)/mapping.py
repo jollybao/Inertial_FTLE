@@ -10,23 +10,23 @@ import time as time
 p = num.pi
 A = 0.1
 epsilon = 0.25
-w = 0.6*p
+w = 0.2*p
 Delta = 0.00001
-dt = 1e-2
+dt = 1e-1
 delta = dt
 T = 15
 L = 400
 H = 200
 
 # Stokes' constant
-St = 0.2
+St = 0.3
 # Reynold's number
-R = 0
+R = 1
 St_inverse = 1/St
 
 # earth rotational speed
 #w_rot = 7.2921e-5
-w_rot = 1e-2
+w_rot = 1
 
 # lattitude
 phi = p*40.7128/180
@@ -70,10 +70,10 @@ def accel(x,y,v,t):
     au = 1.5*R*u_acc(x,y,t)
     
     #Coriolis term
-    #ac = num.column_stack((u[:,1],-1*u[:,0]))
-    #ac = f*ac
+    ac = num.column_stack((u[:,1],-1*u[:,0]))
+    ac = f*ac
     
-    a = a + au
+    a = a + au + ac
     return a
 
 # state transition function used in RK4 routine
@@ -93,8 +93,8 @@ def rk4(state,t):
     state[:,0] = num.clip(r[:,0],0.00001,1.99999)
     state[:,1] = num.clip(r[:,1],0.00001,0.99999)
 
-    noise = B*num.random.normal(u,sigma,(L,2))
-    state[:,4:6] += noise
+    #noise = B*num.random.normal(u,sigma,(L,2))
+    #state[:,4:6] += noise
     return state[:,0:4]
 
 '''
@@ -115,7 +115,7 @@ plt.plot(pts[:,0],pts[:,1])
 plt.show()
 '''
 
-output = open('step001.txt','ab')
+output = open('w1_L.txt','ab')
 # y-coordinate of the grid
 h = num.linspace(0.01,0.99,H,num.float64)
 #pts = num.zeros((H*L,2))
@@ -127,8 +127,9 @@ for i in h:
     state[:,0] = num.linspace(0.01,1.99,L,num.float64)
     state[:,1] = i*num.ones(L,num.float64)
     state[:,2:4] = velocity(state[:,0],state[:,1],0)
-    state[:,4:6] = B*num.random.normal(u,sigma,(L,2))
-    #state[:,4:6] = num.zeros((L,2))
+    #state[:,4:6] = B*num.random.normal(u,sigma,(L,2))
+    state[:,4:6] = num.zeros((L,2))
+    
     #print(state)
     
     # perform RK4 to get position of particle 15s later
